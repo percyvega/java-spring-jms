@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- It helps us to perform JNDI operations. It has methods to do lookup and binding operation.
+    The web logic context details are configured using this interface. -->
+    <bean id="jndiTemplate" class="org.springframework.jndi.JndiTemplate">
+        <property name="environment">
+            <props>
+                <prop key="java.naming.factory.initial">
+                    weblogic.jndi.WLInitialContextFactory
+                </prop>
+                <prop key="java.naming.provider.url">t3://localhost:7001</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- It is used to look up the JNDI object on startup and cache it.
+    This interface is used to configure connection factory. -->
+    <bean id="queueConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiTemplate">
+            <ref bean="jndiTemplate"/>
+        </property>
+        <property name="jndiName">
+            <value>jms/RI_CF</value>
+        </property>
+    </bean>
+
+    <!-- It is used by JmsTemplate to resolve destination names. -->
+    <bean id="jmsDestinationResolver" class="org.springframework.jms.support.destination.JndiDestinationResolver">
+        <property name="jndiTemplate">
+            <ref bean="jndiTemplate"/>
+        </property>
+        <property name="cache">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <!-- It is used to send messages. This requires information about connection factory and destination resolver while configuring. -->
+    <bean id="invoiceQueueTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory">
+            <ref bean="queueConnectionFactory"/>
+        </property>
+        <property name="destinationResolver">
+            <ref bean="jmsDestinationResolver"/>
+        </property>
+    </bean>
+
+    <!-- The destination details will be configured using JndiObjectFactoryBean.  -->
+    <bean id="invoiceQueue" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiTemplate">
+            <ref bean="jndiTemplate"/>
+        </property>
+        <property name="jndiName">
+            <value>jms/RI_Q</value>
+        </property>
+    </bean>
+
+    <!-- The details about Message driven will configured as a normal bean. -->
+    <bean id="invoiceListener" class="jms.InvoiceMDB"/>
+
+    <!-- his class is used to configure the normal bean as message driven bean.
+    While configuring, the destination details will be supplied so that the framework can have the relationship between MDB and destination. -->
+    <bean id="Invoicelistener" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="concurrentConsumers" value="5"/>
+        <property name="connectionFactory" ref="queueConnectionFactory"/>
+        <property name="destination" ref="invoiceQueue"/>
+        <property name="messageListener" ref="invoiceListener"/>
+    </bean>
+
+    <!-- Sender bean -->
+    <bean id="jmsInvoiceSender" class="jms.InvoiceQueueSender">
+        <property name="jmsTemplate">
+            <ref bean="invoiceQueueTemplate"/>
+        </property>
+    </bean>
+
+</beans>
