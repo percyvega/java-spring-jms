@@ -11,7 +11,7 @@
                 <prop key="java.naming.factory.initial">
                     weblogic.jndi.WLInitialContextFactory
                 </prop>
-                <prop key="java.naming.provider.url">t3://localhost:7001</prop>
+                <prop key="java.naming.provider.url">t3://dp-gsm3:7001</prop>
             </props>
         </property>
     </bean>
@@ -23,7 +23,7 @@
             <ref bean="jndiTemplate"/>
         </property>
         <property name="jndiName">
-            <value>jms/RI_CF</value>
+            <value>XAConnectionFactory</value>
         </property>
     </bean>
 
@@ -38,7 +38,7 @@
     </bean>
 
     <!-- It is used to send messages. This requires information about connection factory and destination resolver while configuring. -->
-    <bean id="invoiceQueueTemplate" class="org.springframework.jms.core.JmsTemplate">
+    <bean id="myJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory">
             <ref bean="queueConnectionFactory"/>
         </property>
@@ -48,31 +48,31 @@
     </bean>
 
     <!-- The destination details will be configured using JndiObjectFactoryBean.  -->
-    <bean id="invoiceQueue" class="org.springframework.jndi.JndiObjectFactoryBean">
+    <bean id="factoryBean" class="org.springframework.jndi.JndiObjectFactoryBean">
         <property name="jndiTemplate">
             <ref bean="jndiTemplate"/>
         </property>
         <property name="jndiName">
-            <value>jms/RI_Q</value>
+            <value>percyvegaJmsQueue</value>
         </property>
     </bean>
 
     <!-- The details about Message driven will configured as a normal bean. -->
-    <bean id="invoiceListener" class="jms.InvoiceMDB"/>
+    <bean id="myMessageListener" class="com.percyvega.jms.spring.MyMessageListener"/>
 
     <!-- his class is used to configure the normal bean as message driven bean.
     While configuring, the destination details will be supplied so that the framework can have the relationship between MDB and destination. -->
-    <bean id="Invoicelistener" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+    <bean id="listenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="concurrentConsumers" value="5"/>
         <property name="connectionFactory" ref="queueConnectionFactory"/>
-        <property name="destination" ref="invoiceQueue"/>
-        <property name="messageListener" ref="invoiceListener"/>
+        <property name="destination" ref="factoryBean"/>
+        <property name="messageListener" ref="myMessageListener"/>
     </bean>
 
     <!-- Sender bean -->
-    <bean id="jmsInvoiceSender" class="jms.InvoiceQueueSender">
+    <bean id="myMessageSender" class="com.percyvega.jms.spring.MessageSender">
         <property name="jmsTemplate">
-            <ref bean="invoiceQueueTemplate"/>
+            <ref bean="myJmsTemplate"/>
         </property>
     </bean>
 
