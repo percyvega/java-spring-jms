@@ -19,5 +19,5 @@ public class MyMessageListener implements MessageListener {
             logger.warn(e.toString());
         }
     }
-    
+
 }
