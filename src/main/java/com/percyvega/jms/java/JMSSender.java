@@ -19,8 +19,10 @@ public class JMSSender {
     private static QueueSender qsndr;
     private static TextMessage textMessage;
 
-    private static final String QCF_NAME = "XAConnectionFactory";   // Queue Connection Factory name
-    private static final String QUEUE_NAME = "percyvegaJmsQueue";   // Queue name
+    private static final String ICF_NAME = "weblogic.jndi.WLInitialContextFactory";     // Initial Context Factory name
+    private static final String PROVIDER_URL = "t3://dp-gsm3:7001";                     // Provider url (server:port)
+    private static final String QCF_NAME = "XAConnectionFactory";                       // Queue Connection Factory name
+    private static final String QUEUE_NAME = "percyvegaJmsQueue";                       // Queue name
 
     public static void sendMessage(String messageText) {
         logger.debug("Starting sendMessage(" + messageText + ")");
@@ -28,10 +30,10 @@ public class JMSSender {
         try {
 
             Hashtable properties = new Hashtable();
-            properties.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");   // initial context
-            properties.put(Context.PROVIDER_URL, "t3://dp-gsm3:7001");  // server:port
-//            properties.put(Context.SECURITY_PRINCIPAL, "username");       // username
-//            properties.put(Context.SECURITY_CREDENTIALS, "password");   // password
+            properties.put(Context.INITIAL_CONTEXT_FACTORY, ICF_NAME);
+            properties.put(Context.PROVIDER_URL, PROVIDER_URL);
+//            properties.put(Context.SECURITY_PRINCIPAL, "username");                   // username
+//            properties.put(Context.SECURITY_CREDENTIALS, "password");                 // password
 
             initialContext = new InitialContext(properties);
             logger.debug("Got InitialContext " + initialContext.toString());
