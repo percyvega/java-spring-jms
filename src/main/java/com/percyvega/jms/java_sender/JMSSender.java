@@ -1,4 +1,4 @@
-package com.percyvega.jms.java;
+package com.percyvega.jms.java_sender;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +8,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.Hashtable;
 
+/**
+ * Created by pevega on 1/21/2015.
+ */
 public class JMSSender {
     private static final Logger logger = LoggerFactory.getLogger(JMSSender.class);
 
@@ -20,20 +23,17 @@ public class JMSSender {
     private static TextMessage textMessage;
 
     private static final String ICF_NAME = "weblogic.jndi.WLInitialContextFactory";     // Initial Context Factory name
-    private static final String PROVIDER_URL = "t3://dp-gsm3:7001";                     // Provider url (server:port)
-    private static final String QCF_NAME = "XAConnectionFactory";                       // Queue Connection Factory name
-    private static final String QUEUE_NAME = "percyvegaJmsQueue";                       // Queue name
+    private static final String PROVIDER_URL = "t3://dp-devcarrier1:8001";              // Provider url (server:port)
+    private static final String QCF_NAME = "jms/myConnectionFactory";                   // Connection Factory JNDI name
+    private static final String QUEUE_NAME = "jms/percyvegaQueue";                      // Queue JNDI name
 
-    public static void sendMessage(String messageText) {
-        logger.debug("Starting sendMessage(" + messageText + ")");
-
+    public JMSSender() {
         try {
-
             Hashtable properties = new Hashtable();
             properties.put(Context.INITIAL_CONTEXT_FACTORY, ICF_NAME);
             properties.put(Context.PROVIDER_URL, PROVIDER_URL);
-//            properties.put(Context.SECURITY_PRINCIPAL, "username");                   // username
-//            properties.put(Context.SECURITY_CREDENTIALS, "password");                 // password
+            //            properties.put(Context.SECURITY_PRINCIPAL, "username");                   // username
+            //            properties.put(Context.SECURITY_CREDENTIALS, "password");                 // password
 
             initialContext = new InitialContext(properties);
             logger.debug("Got InitialContext " + initialContext.toString());
@@ -62,28 +62,44 @@ public class JMSSender {
             textMessage = queueSession.createTextMessage();
             logger.debug("Got TextMessage " + textMessage.toString());
 
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            logger.warn(e.toString());
+        }
+    }
+
+    public void sendMessage(String messageText) {
+//        logger.debug("Starting sendMessage(" + messageText + ")");
+
+        try {
             // set textMessage text in TextMessage
             textMessage.setText(messageText);
-            logger.debug("Set text in TextMessage " + textMessage.toString());
+//            logger.debug("Set text in TextMessage " + textMessage.toString());
 
             // send textMessage
             qsndr.send(textMessage);
-            logger.debug("Sent textMessage ");
-
-            // clean up
-            qsndr.close();
-            queueSession.close();
-            queueConnection.close();
-
+            logger.debug("Sent textMessage: " + messageText);
         } catch (Exception e) {
             e.printStackTrace(System.err);
             logger.warn(e.toString());
         }
 
-        logger.debug("Finishing sendMessage");
+//        logger.debug("Finishing sendMessage");
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+
+        // clean up
+        qsndr.close();
+        queueSession.close();
+        queueConnection.close();
     }
 
     public static void main(String args[]) {
-        sendMessage("test");
+        JMSSender jmsSender = new JMSSender();
+        for (int i = 1; i <= 10; i++)
+            jmsSender.sendMessage("This is my JMS message #" + i + "!");
     }
 }

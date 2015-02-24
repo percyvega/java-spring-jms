@@ -27,6 +27,6 @@ public class MessageSender {
             }
         };
 
-        jmsTemplate.send("percyvegaJmsQueue", messageCreator);
+        jmsTemplate.send("jms/percyvegaQueue", messageCreator);
     }
 }

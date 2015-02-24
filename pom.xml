@@ -18,10 +18,15 @@
             <artifactId>spring-context</artifactId>
             <version>4.0.8.RELEASE</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>weblogic</groupId>-->
+            <!--<artifactId>wlfullclient</artifactId>-->
+            <!--<version>10.3.3</version>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>weblogic</groupId>
-            <artifactId>wlfullclient</artifactId>
-            <version>10.3.3</version>
+            <groupId>com.oracle</groupId>
+            <artifactId>wlthint3client</artifactId>
+            <version>10.3.6</version>
         </dependency>
         <dependency>
             <groupId>javax</groupId>
