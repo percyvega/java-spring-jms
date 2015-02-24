@@ -27,6 +27,11 @@ public class JMSSender {
     private static final String QCF_NAME = "jms/myConnectionFactory";                   // Connection Factory JNDI name
     private static final String QUEUE_NAME = "jms/percyvegaQueue";                      // Queue JNDI name
 
+    @Override
+    public String toString() {
+        return "JMSSender [ICF_NAME=" + ICF_NAME + ", PROVIDER_URL=" + PROVIDER_URL + ", QCF_NAME=" + QCF_NAME + ", QUEUE_NAME=" + QUEUE_NAME + "]";
+    }
+
     public JMSSender() {
         try {
             Hashtable properties = new Hashtable();
