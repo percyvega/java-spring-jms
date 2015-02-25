@@ -12,15 +12,16 @@ import java.util.Hashtable;
  * Created by pevega on 1/21/2015.
  */
 public class JMSSender {
+
     private static final Logger logger = LoggerFactory.getLogger(JMSSender.class);
 
-    private static InitialContext initialContext;
-    private static QueueConnectionFactory queueConnectionFactory;
-    private static QueueConnection queueConnection;
-    private static QueueSession queueSession;
-    private static Queue queue;
-    private static QueueSender qsndr;
-    private static TextMessage textMessage;
+    private InitialContext initialContext;
+    private QueueConnectionFactory queueConnectionFactory;
+    private QueueConnection queueConnection;
+    private QueueSession queueSession;
+    private Queue queue;
+    private QueueSender qsndr;
+    private TextMessage textMessage;
 
     private static final String ICF_NAME = "weblogic.jndi.WLInitialContextFactory";     // Initial Context Factory name
     private static final String PROVIDER_URL = "t3://dp-devcarrier1:8001";              // Provider url (server:port)
@@ -41,31 +42,31 @@ public class JMSSender {
             //            properties.put(Context.SECURITY_CREDENTIALS, "password");                 // password
 
             initialContext = new InitialContext(properties);
-            logger.debug("Got InitialContext " + initialContext.toString());
+//            logger.debug("Got InitialContext " + initialContext.toString());
 
             // create QueueConnectionFactory
             queueConnectionFactory = (QueueConnectionFactory) initialContext.lookup(QCF_NAME);
-            logger.debug("Got QueueConnectionFactory " + queueConnectionFactory.toString());
+//            logger.debug("Got QueueConnectionFactory " + queueConnectionFactory.toString());
 
             // create QueueConnection
             queueConnection = queueConnectionFactory.createQueueConnection();
-            logger.debug("Got QueueConnection " + queueConnection.toString());
+//            logger.debug("Got QueueConnection " + queueConnection.toString());
 
             // create QueueSession
             queueSession = queueConnection.createQueueSession(false, 0);
-            logger.debug("Got QueueSession " + queueSession.toString());
+//            logger.debug("Got QueueSession " + queueSession.toString());
 
             // lookup Queue
             queue = (Queue) initialContext.lookup(QUEUE_NAME);
-            logger.debug("Got Queue " + queue.toString());
+//            logger.debug("Got Queue " + queue.toString());
 
             // create QueueSender
             qsndr = queueSession.createSender(queue);
-            logger.debug("Got QueueSender " + qsndr.toString());
+//            logger.debug("Got QueueSender " + qsndr.toString());
 
             // create TextMessage
             textMessage = queueSession.createTextMessage();
-            logger.debug("Got TextMessage " + textMessage.toString());
+//            logger.debug("Got TextMessage " + textMessage.toString());
 
         } catch (Exception e) {
             e.printStackTrace(System.err);
@@ -73,23 +74,12 @@ public class JMSSender {
         }
     }
 
-    public void sendMessage(String messageText) {
-//        logger.debug("Starting sendMessage(" + messageText + ")");
+    public void sendMessage(String messageText) throws JMSException {
+        // set textMessage text in TextMessage
+        textMessage.setText(messageText);
 
-        try {
-            // set textMessage text in TextMessage
-            textMessage.setText(messageText);
-//            logger.debug("Set text in TextMessage " + textMessage.toString());
-
-            // send textMessage
-            qsndr.send(textMessage);
-            logger.debug("Sent textMessage: " + messageText);
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            logger.warn(e.toString());
-        }
-
-//        logger.debug("Finishing sendMessage");
+        // send textMessage
+        qsndr.send(textMessage);
     }
 
     @Override
@@ -102,7 +92,7 @@ public class JMSSender {
         queueConnection.close();
     }
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws JMSException {
         JMSSender jmsSender = new JMSSender();
         for (int i = 1; i <= 10; i++)
             jmsSender.sendMessage("This is my JMS message #" + i + "!");
